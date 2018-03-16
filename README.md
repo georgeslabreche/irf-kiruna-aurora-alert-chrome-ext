@@ -3,7 +3,7 @@
 ## What is this?
 This Chrome extension notifies users when IRF Kiruna's magnetogram readings indicate that nice auroras have likely appeared in the past hour and half.
 
-## How is this useful? It just tells if I missed great auroras 1.5 hours ago!
+## How is this useful? It just tells me if I missed great auroras 1.5 hours ago!
 It may serve as an indicator that more good auroras are currently happening or will eventually happen. Admittedly, this tool would be much more useful if more recent magnetogram data was available. 
 
 ## How does it work?
