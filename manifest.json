@@ -1,18 +1,10 @@
 {
-  "manifest_version": 1,
+  "manifest_version": 2,
   "name": "IRF Kiruna Aurora Alert",
   "description": "Notifies user when IRF Kiruna magnetogram readings are trending upwards in the last hour.",
   "version": "0.1",
-  "icons": { 
-    "16": "icon-16.png",
-    "48": "icon-48.png", 
-    "128": "icon-128.png"
-  },
-  "browser_action": {
-    "default_icon": "icon-48.png",
-    "default_popup": "magnetogram.html"
-  },
   "background": {
-    "scripts": ["magnetogram.js"]
-  }
+    "scripts": ["background.js"]
+  },
+  "permissions": ["http://www2.irf.se/"]
 }
