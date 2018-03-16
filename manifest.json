@@ -13,7 +13,9 @@
       "js/simple-statistics.min.js",
       "background.js"]
   },
-  "permissions": ["http://www2.irf.se/"],
+  "permissions": [
+    "http://www2.irf.se/",
+    "notifications"],
   "browser_action": {
     "default_icon": "icons/icon-48.png",
     "default_popup": "popup.html"
