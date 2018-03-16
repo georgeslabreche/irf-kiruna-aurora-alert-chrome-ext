@@ -64,10 +64,14 @@ function pollIRF() {
                     analyzeTrend(kirkZArray);
                 }
 
-                // A high KIRKY value is usually secong best so we check for this only after checking for high KIRKZ. 
+                // A high KIRKY value is usually second best so we check for this only after checking for high KIRKZ. 
                 // We only care if in the past hour and a half we reached at least the 100 nT values for KIRKY.
                 else if(ss.max(kirkYArray) >= 100){
                     analyzeTrend(kirkYArray);
+                }
+
+                else{
+                    noNotification();
                 }
   
             });
@@ -102,6 +106,10 @@ function analyzeTrend(kirkArray){
 
     // Display linear regression slope value as badge text.
     chrome.browserAction.setBadgeText({text: lrSlope.toString().substring(0, 4).replace('.0','')});
+}
+
+function noNotification(){
+    chrome.browserAction.setBadgeText({text: ''});
 }
 
 
