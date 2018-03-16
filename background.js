@@ -1,4 +1,4 @@
-var pollInterval = 5 * 1000 ; // 5 seconds in milliseconds
+var pollInterval = 60 * 1000 ; // 1 minute in milliseconds
 
 function pollIRF() {
     const url = 'http://www2.irf.se/maggraphs/rt_iaga_last_hour.txt';
