@@ -58,140 +58,50 @@ function pollIRF() {
                     }
                 }
 
-                var linearRegressionValues = findLineByLeastSquares(kirkZArray);
+                // A high KIRKZ value is usually best so we check for this first.
+                // We only care if in the past hour and a half we reached at least the 52000 nT values for KIRKZ.
+                if(ss.max(kirkZArray) >= 52000){
+                    analyzeTrend(kirkZArray);
+                }
+
+                // A high KIRKY value is usually secong best so we check for this only after checking for high KIRKZ. 
+                // We only care if in the past hour and a half we reached at least the 100 nT values for KIRKY.
+                else if(ss.max(kirkYArray) >= 100){
+                    analyzeTrend(kirkYArray);
+                }
+  
             });
         })
 
     window.setTimeout(pollIRF, pollInterval);
 }
 
-function findLineByLeastSquares(values_y) {
-    var values_y = [51943.89,
-    51949.06,
-    51948.17,
-    51949.28,
-    51941.37,
-    51924.26,
-    51921.37,
-    51908.61,
-    51903.03,
-    51890.91,
-    51873.72,
-    51861.25,
-    51850.58,
-    51852.01,
-    51849.44,
-    51847.57,
-    51847.76,
-    51844.96,
-    51839.04,
-    51834.29,
-    51827.36,
-    51828.07,
-    51827.09,
-    51827.86,
-    51825.01,
-    51823.99,
-    51821.64,
-    51820.17,
-    51816.4,
-    51814.02,
-    51811.46,
-    51810.28,
-    51812.31,
-    51812.37,
-    51814.01,
-    51814.94,
-    51818.28,
-    51820.22,
-    51822.56,
-    51825.05,
-    51824.61,
-    51826.97,
-    51829.15,
-    51830.95,
-    51833.15,
-    51837.74,
-    51840.76,
-    51842.17,
-    51843.78,
-    51848.17,
-    51850.1,
-    51853.82,
-    51856.39,
-    51853.87,
-    51856.08,
-    51859.54,
-    51860.86,
-    51862.34,
-    51865.19,
-    51869.94,
-    51874.04]
+// Analyze trend of magnetogram values and notify if event was likely missed.
+function analyzeTrend(kirkArray){
+    // Get the slope of the linear regression for the past half hour.
+    var timeKirkPairs = new Array();
+    var kirkArrayLast1HourAndAHalf = kirkArray.slice(30);
 
-    // Create the time tick array.
-    values_x = new Array();
-    for(var timetick = 0; timetick < values_y.length; timetick++){
-        values_x.push(timetick);
+    // Build the x,y pair for the lineary regression function parameter.
+    for(var timetick = 0; timetick < kirkArrayLast1HourAndAHalf.length; timetick++){
+        timeKirkPairs.push([timetick, kirkArrayLast1HourAndAHalf[timetick]]);
     }
 
-    var sum_x = 0;
-    var sum_y = 0;
-    var sum_xy = 0;
-    var sum_xx = 0;
-    var count = 0;
+    // Linear regression.
+    var lr = ss.linearRegression(timeKirkPairs);
+    var lrSlope = lr['m'];
 
-    /*
-     * We'll use those variables for faster read/write access.
-     */
-    var x = 0;
-    var y = 0;
-    var values_length = values_x.length;
-
-    if (values_length != values_y.length) {
-        throw new Error('The parameters values_x and values_y need to have same size!');
+    // If linear regression trend for KIRKZ value is that it is increasing,
+    // set badge to green indicating chances of aurora sighting.
+    if(lrSlope >= 1){
+        chrome.browserAction.setBadgeBackgroundColor({color: [50, 205, 50, 255]});
+    }else{
+        // If it is decrease, badge is grey.
+        chrome.browserAction.setBadgeBackgroundColor({color: [211, 211, 211, 255]});
     }
 
-    /*
-     * Nothing to do.
-     */
-    if (values_length === 0) {
-        return [ [], [] ];
-    }
-
-    /*
-     * Calculate the sum for each of the parts necessary.
-     */
-    for (var v = 0; v < values_length; v++) {
-        x = values_x[v];
-        y = values_y[v];
-        sum_x += x;
-        sum_y += y;
-        sum_xx += x*x;
-        sum_xy += x*y;
-        count++;
-    }
-
-    /*
-     * Calculate m and b for the formular:
-     * y = x * m + b
-     */
-    var m = (count*sum_xy - sum_x*sum_y) / (count*sum_xx - sum_x*sum_x);
-    var b = (sum_y/count) - (m*sum_x)/count;
-
-    /*
-     * We will make the x and y result line now
-     */
-    var result_values_x = [];
-    var result_values_y = [];
-
-    for (var v = 0; v < values_length; v++) {
-        x = values_x[v];
-        y = x * m + b;
-        result_values_x.push(x);
-        result_values_y.push(y);
-    }
-
-    return [result_values_x, result_values_y];
+    // Display linear regression slope value as badge text.
+    chrome.browserAction.setBadgeText({text: lrSlope.toString().substring(0, 4).replace('.0','')});
 }
 
 
