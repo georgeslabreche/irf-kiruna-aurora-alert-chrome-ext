@@ -1,7 +1,13 @@
 const K_INDEX_URL = 'http://www2.irf.se/maggraphs/preliminary_real_time_k_index_15_minutes';
 const MAG_URL = 'http://www2.irf.se/maggraphs/rt_iaga_last_hour.txt';
 
-const POLL_INTERVALL = 60 * 1000 ; // 1 minute in milliseconds
+const POLL_INTERVALL = 90 * 1000 ; // 1.5 minute in milliseconds
+
+const THRESHOLD_X = 10500; // TODO: This is for North. What about South?
+const THRESHOLD_Y = 100; // TODO: Is this for East or West? Need to find out.
+const THRESHOLD_Z = 52000;
+
+const HISTORICAL_DATA_THRESHOLD = 20 // In minutes. To calculate linear regression.
 
 const K_INDEX_COLOR_GRADIENTS = [
     [23, 9, 149, 255],  // 0
@@ -77,53 +83,62 @@ function fetchAndProcessMagReadings(){
                     }
                 }
 
+                // TODO: Notify only for the latest magnetogram reading?
 
                 // We can only displa 1 number in the badge.
                 // We choose the Z index value indicating measurements above.
                 analyzeTrend(kirkZArray);
 
                 // A high KIRKZ value is usually best so we check for this first.
-                // We only care if in the past hour and a half we reached at least the 52000 nT values for KIRKZ.
-                if(ss.max(kirkZArray) >= 52000){
+                // Check if the latest KIRKZ reading is over a certain threshold
+                if(kirkZArray[kirkZArray.length - 1] >= THRESHOLD_Z){
                     var highZComponentNotification = {
                         type: "basic",
                         title: "Look up above you!",
-                        message: "Over 52,000 nT was measured above you about an hour ago.",
+                        message: "Over " + THRESHOLD_Z + " nT was measured.",
                         iconUrl: "icons/icon-128.png"
                     };
 
-                    chrome.notifications.create("success-notification", highZComponentNotification);
+                    chrome.notifications.create("", highZComponentNotification);
                 }
 
-                //TODO: How about KIRKX? Need to understand the thresholds more...
-
-                // A high KIRKY value is usually second best so we check for this only after checking for high KIRKZ. 
-                // We only care if in the past hour and a half we reached at least the 100 nT values for KIRKY.
-                else if(ss.max(kirkYArray) >= 100){
+                // A high KIRKY value is second best so we check for this only after checking for high KIRKZ. 
+                else if(kirkYArray[kirkYArray.length - 1] >= THRESHOLD_Y){
                     var highYComponentNotification = {
                         type: "basic",
                         title: "Look to the East-West!",
-                        message: "Over 100 nT was measured about an hour ago.",
+                        message: "Over " + THRESHOLD_Y + " nT was recently measured.",
                         iconUrl: "icons/icon-128.png"
                     };
 
-                    chrome.notifications.create("success-notification", highYComponentNotification);
+                    chrome.notifications.create("", highYComponentNotification);
                 }
 
-  
+                // A high KIRKX value is second best as well so we check for this only after checking for high KIRKZ and KIRKY. 
+                else if(kirkXArray[kirkXArray.length - 1] >= THRESHOLD_X){
+                    var highXComponentNotification = {
+                        type: "basic",
+                        title: "Look to the North-South!", // Is actually North right now
+                        message: "Over " + THRESHOLD_X + " nT was recently measured.",
+                        iconUrl: "icons/icon-128.png"
+                    };
+
+                    chrome.notifications.create("", highXComponentNotification);
+                }
+ 
             });
         });
 }
 
 // Analyze trend of magnetogram values and notify if event was likely missed.
 function analyzeTrend(kirkArray){
-    // Get the slope of the linear regression for the past half hour.
+    // Get the slope of the linear regression for the past x minutes (as defined by HISTORICAL_DATA_THRESHOLD).
     var timeKirkPairs = new Array();
-    var kirkArrayLast1HourAndAHalf = kirkArray.slice(30);
+    var kirkArrayXMinutes = kirkArray.slice(HISTORICAL_DATA_THRESHOLD);
 
     // Build the x,y pair for the lineary regression function parameter.
-    for(var timetick = 0; timetick < kirkArrayLast1HourAndAHalf.length; timetick++){
-        timeKirkPairs.push([timetick, kirkArrayLast1HourAndAHalf[timetick]]);
+    for(var timetick = 0; timetick < kirkArrayXMinutes.length; timetick++){
+        timeKirkPairs.push([timetick, kirkArrayXMinutes[timetick]]);
     }
 
     // Linear regression.
