@@ -1,11 +1,13 @@
 const K_INDEX_URL = 'http://www2.irf.se/maggraphs/preliminary_real_time_k_index_15_minutes';
 const MAG_URL = 'http://www2.irf.se/maggraphs/rt_iaga_last_hour.txt';
 
-const POLL_INTERVALL = 90 * 1000 ; // 1.5 minute in milliseconds
+const POLL_INTERVALL = 9 * 1000 ; // 1.5 minute in milliseconds
 
 const THRESHOLD_X = 10500; // TODO: This is for North. What about South?
 const THRESHOLD_Y = 100; // TODO: Is this for East or West? Need to find out.
 const THRESHOLD_Z = 52000;
+
+const THRESHOLD_K_INDEX = 5;
 
 const HISTORICAL_DATA_THRESHOLD = 20 // In minutes. To calculate linear regression.
 
@@ -87,44 +89,13 @@ function fetchAndProcessMagReadings(){
 
                 // We can only displa 1 number in the badge.
                 // We choose the Z index value indicating measurements above.
-                analyzeTrend(kirkZArray);
+                var lrSlope = analyzeTrend(kirkZArray);
 
-                // A high KIRKZ value is usually best so we check for this first.
-                // Check if the latest KIRKZ reading is over a certain threshold
-                if(kirkZArray[kirkZArray.length - 1] >= THRESHOLD_Z){
-                    var highZComponentNotification = {
-                        type: "basic",
-                        title: "Look up above you!",
-                        message: "Over " + THRESHOLD_Z + " nT was measured.",
-                        iconUrl: "icons/icon-128.png"
-                    };
+                // update badge with slope value from linear regression.
+                updateBadge(lrSlope);
 
-                    chrome.notifications.create("", highZComponentNotification);
-                }
-
-                // A high KIRKY value is second best so we check for this only after checking for high KIRKZ. 
-                else if(kirkYArray[kirkYArray.length - 1] >= THRESHOLD_Y){
-                    var highYComponentNotification = {
-                        type: "basic",
-                        title: "Look to the East-West!",
-                        message: "Over " + THRESHOLD_Y + " nT was recently measured.",
-                        iconUrl: "icons/icon-128.png"
-                    };
-
-                    chrome.notifications.create("", highYComponentNotification);
-                }
-
-                // A high KIRKX value is second best as well so we check for this only after checking for high KIRKZ and KIRKY. 
-                else if(kirkXArray[kirkXArray.length - 1] >= THRESHOLD_X){
-                    var highXComponentNotification = {
-                        type: "basic",
-                        title: "Look to the North-South!", // Is actually North right now
-                        message: "Over " + THRESHOLD_X + " nT was recently measured.",
-                        iconUrl: "icons/icon-128.png"
-                    };
-
-                    chrome.notifications.create("", highXComponentNotification);
-                }
+                // Notify user whether to look outside or not.
+                notify(kirkZArray, kirkYArray, kirkXArray); 
  
             });
         });
@@ -145,7 +116,7 @@ function analyzeTrend(kirkArray){
     var lr = ss.linearRegression(timeKirkPairs);
     var lrSlope = lr['m'];
 
-    updateBadge(lrSlope);      
+    return lrSlope;
 }
 
 function updateBadge(lrSlope){
@@ -159,6 +130,55 @@ function updateBadge(lrSlope){
                 chrome.browserAction.setBadgeText({text: lrSlope.toString().substring(0, 4)});
             });
         });  
+}
+
+function notify(kirkZArray, kirkYArray, kirkXArray){
+    fetch(K_INDEX_URL)
+        .then(function(response) {
+            response.text().then(function (text) {
+
+                var kIndex = parseInt(text);
+
+                if(kIndex >= THRESHOLD_K_INDEX){
+                    // A high KIRKZ value is usually best so we check for this first.
+                    // Check if the latest KIRKZ reading is over a certain threshold
+                    if(kirkZArray[kirkZArray.length - 1] >= THRESHOLD_Z){
+                        var highZComponentNotification = {
+                            type: "basic",
+                            title: "Look up above you!",
+                            message: "Over " + THRESHOLD_Z + " nT was measured.",
+                            iconUrl: "icons/icon-128.png"
+                        };
+
+                        chrome.notifications.create("", highZComponentNotification);
+                    }
+
+                    // A high KIRKY value is second best so we check for this only after checking for high KIRKZ. 
+                    else if(kirkYArray[kirkYArray.length - 1] >= THRESHOLD_Y){
+                        var highYComponentNotification = {
+                            type: "basic",
+                            title: "Look to the East-West!",
+                            message: "Over " + THRESHOLD_Y + " nT was recently measured.",
+                            iconUrl: "icons/icon-128.png"
+                        };
+
+                        chrome.notifications.create("", highYComponentNotification);
+                    }
+
+                    // A high KIRKX value is second best as well so we check for this only after checking for high KIRKZ and KIRKY. 
+                    else if(kirkXArray[kirkXArray.length - 1] >= THRESHOLD_X){
+                        var highXComponentNotification = {
+                            type: "basic",
+                            title: "Look to the North-South!", // Is actually North right now
+                            message: "Over " + THRESHOLD_X + " nT was recently measured.",
+                            iconUrl: "icons/icon-128.png"
+                        };
+
+                        chrome.notifications.create("", highXComponentNotification);
+                    }
+                }
+            });
+        });
 }
 
 
