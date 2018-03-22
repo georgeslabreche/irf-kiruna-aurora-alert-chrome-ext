@@ -1,7 +1,7 @@
 const K_INDEX_URL = 'http://www2.irf.se/maggraphs/preliminary_real_time_k_index_15_minutes';
 const MAG_URL = 'http://www2.irf.se/maggraphs/rt_iaga_last_hour.txt';
 
-const POLL_INTERVALL = 9 * 1000 ; // 1.5 minute in milliseconds
+const POLL_INTERVALL = 90 * 1000 ; // 1.5 minute in milliseconds
 
 const THRESHOLD_X = 10500; // TODO: This is for North. What about South?
 const THRESHOLD_Y = 100; // TODO: Is this for East or West? Need to find out.
