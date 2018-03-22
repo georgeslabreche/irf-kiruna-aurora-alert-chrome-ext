@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "IRF Kiruna Aurora Alert",
-  "description": "Notifies user when the IRF Kiruna magnetogram readings indicate that nice auroras have likely appeared in the last hour and half.",
-  "version": "1.1",
+  "description": "Notifies user when the IRF Kiruna magnetogram readings indicate that nice auroras have been appearing.",
+  "version": "1.2",
   "icons": { 
     "16": "icons/icon-16.png",
     "48": "icons/icon-48.png", 
