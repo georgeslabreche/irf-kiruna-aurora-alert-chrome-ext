@@ -1,38 +1,36 @@
 <!DOCTYPE html>
 <html>
-  <head>
-  	<script>
-  		var getHTML = function (url, callback) {
+    <head>
+        <script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+        <script type="text/javascript" src="js/popup.js"></script>
+    </head>
+    <body>
+        <div align="center">
+            <br>
+            <div>
+                <input type="checkbox" name="notification-cb" id="notification-cb"/>
+                <label class="notification-cb-label" for="notification-cb">
+                    <strong>Enable Notifications</strong>
+                </label>
+            </div>
+            <br>
 
-			// Feature detection
-			if ( !window.XMLHttpRequest ) return;
-
-			// Create new request
-			var xhr = new XMLHttpRequest();
-
-			// Setup callback
-			xhr.onload = function() {
-				if ( callback && typeof( callback ) === 'function' ) {
-					callback( this.responseXML );
-				}
-			}
-
-			// Get the HTML
-			xhr.open( 'GET', url );
-			xhr.responseType = 'document';
-			xhr.send();
-
-		};
-  	</script>
-  </head>
-  <body>
-    <div align="center" style="padding-left:55px;">
-        <img id="maggraph" width="600" src="http://www2.irf.se/maggraphs/rtplot_flux2_solarq_abs_24.png" alt="Kiruna Magnetogram">
-        <p>
-        	<a href="http://www2.irf.se/maggraphs/" target="_blank">Source: IRF Kiruna</a> <a href="http://www2.irf.se/maggraphs/preliminary_real_time_k_index_15_minutes" target="_blank">
-    			(K Index)
-    		</a>
-        </p>
-    </div>
-  </body>
+            <table>
+                <tr>
+                    <td style="padding-left:30px; padding-right:30px;">
+                        <img width="250" src="http://www.irf.se/allsky/LASTv2.JPG">
+                    </td>
+                    <td>
+                        <img id="maggraph" width="500" src="http://www2.irf.se/maggraphs/rtplot_flux2_solarq_abs_24.png" alt="Kiruna Magnetogram">
+                    </td> 
+                </tr>
+                <tr align="center">
+                    <td colspan="2">
+                        <br>
+                        Sources: <a href="http://www2.irf.se/maggraphs/" target="_blank">Magnetogram</a>, <a href="http://www2.irf.se/maggraphs/preliminary_real_time_k_index_15_minutes" target="_blank">K Index</a>, and <a href="http://www2.irf.se/allsky/rtascirf.php" target="_blank">All-Sky Camera</a>.
+                    </td>
+                </tr>
+            </table>        
+        </div>
+    </body>
 </html>

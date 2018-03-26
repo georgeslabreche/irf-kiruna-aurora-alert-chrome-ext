@@ -1,7 +1,7 @@
 const K_INDEX_URL = 'http://www2.irf.se/maggraphs/preliminary_real_time_k_index_15_minutes';
 const MAG_URL = 'http://www2.irf.se/maggraphs/rt_iaga_last_hour.txt';
 
-const POLL_INTERVALL = 90 * 1000 ; // 1.5 minute in milliseconds
+const POLL_INTERVALL = 90 * 1000; // 1.5 minute in milliseconds
 
 const THRESHOLD_X = 10500; // TODO: This is for North. What about South?
 const THRESHOLD_Y = 100; // TODO: Is this for East or West? Need to find out.
@@ -24,11 +24,13 @@ const K_INDEX_COLOR_GRADIENTS = [
     [99, 245, 20, 255]  // 9
 ]
 
+// Polling for data and processing that data.
 function pollIRF() {
     fetchAndProcessMagReadings();
     window.setTimeout(pollIRF, POLL_INTERVALL);
 }
 
+// Fech and process data.
 function fetchAndProcessMagReadings(){
     fetch(MAG_URL)
         .then(function(response) {
@@ -95,8 +97,12 @@ function fetchAndProcessMagReadings(){
                 updateBadge(lrSlope);
 
                 // Notify user whether to look outside or not.
-                notify(kirkZArray, kirkYArray, kirkXArray); 
- 
+                // Only do so if notification is enabled.
+                chrome.storage.sync.get('notification', function(storage) {
+                    if(storage.notification === true){
+                        notify(kirkZArray, kirkYArray, kirkXArray); 
+                    }
+                });
             });
         });
 }
@@ -119,6 +125,7 @@ function analyzeTrend(kirkArray){
     return lrSlope;
 }
 
+// Update badage with the magnetogram's linear regression slope value.
 function updateBadge(lrSlope){
     fetch(K_INDEX_URL)
         .then(function(response) {
@@ -132,6 +139,7 @@ function updateBadge(lrSlope){
         });  
 }
 
+// Notify the user to look outside for auroras.
 function notify(kirkZArray, kirkYArray, kirkXArray){
     fetch(K_INDEX_URL)
         .then(function(response) {
@@ -181,5 +189,5 @@ function notify(kirkZArray, kirkYArray, kirkXArray){
         });
 }
 
-
+// Start the program.
 pollIRF();
