@@ -8,6 +8,7 @@ const THRESHOLD_Y = 100; // TODO: Is this for East or West? Need to find out.
 const THRESHOLD_Z = 52000;
 
 const THRESHOLD_K_INDEX = 5;
+const K_INDEX_ERROR = 10;
 
 const HISTORICAL_DATA_THRESHOLD = 20 // In minutes. To calculate linear regression.
 
@@ -147,7 +148,7 @@ function notify(kirkZArray, kirkYArray, kirkXArray){
 
                 var kIndex = parseInt(text);
 
-                if(kIndex >= THRESHOLD_K_INDEX){
+                if(kIndex >= THRESHOLD_K_INDEX && kIndex < K_INDEX_ERROR){
                     // A high KIRKZ value is usually best so we check for this first.
                     // Check if the latest KIRKZ reading is over a certain threshold
                     if(kirkZArray[kirkZArray.length - 1] >= THRESHOLD_Z){
